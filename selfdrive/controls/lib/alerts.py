@@ -335,7 +335,7 @@ ALERTS = [
   Alert(
       "sensorDataInvalidNoEntry",
       "openpilot Unavailable",
-      "No Data from EON Sensors",
+      "No Data from Device Sensors",
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
@@ -371,7 +371,7 @@ ALERTS = [
   Alert(
       "calibrationInvalid",
       "TAKE CONTROL IMMEDIATELY",
-      "Calibration Invalid: Reposition EON and Recalibrate",
+      "Calibration Invalid: Reposition Device and Recalibrate",
       AlertStatus.critical, AlertSize.full,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, 2., 2.),
 
@@ -442,7 +442,7 @@ ALERTS = [
   Alert(
       "lowMemory",
       "TAKE CONTROL IMMEDIATELY",
-      "Low Memory: Reboot Your EON",
+      "Low Memory: Reboot Your Device",
       AlertStatus.critical, AlertSize.full,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, 2., 2.),
 
@@ -543,7 +543,7 @@ ALERTS = [
   Alert(
       "calibrationInvalidNoEntry",
       "openpilot Unavailable",
-      "Calibration Invalid: Reposition EON and Recalibrate",
+      "Calibration Invalid: Reposition Device and Recalibrate",
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
@@ -690,7 +690,7 @@ ALERTS = [
   Alert(
       "lowMemoryNoEntry",
       "openpilot Unavailable",
-      "Low Memory: Reboot Your EON",
+      "Low Memory: Reboot Your Device",
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeDisengage, .4, 2., 3.),
 
@@ -746,22 +746,22 @@ ALERTS = [
 
   Alert(
       "sensorDataInvalidPermanent",
-      "No Data from EON Sensors",
-      "Reboot your EON",
+      "No Data from Device Sensors",
+      "Reboot your Device",
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW_LOWEST, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
 
   Alert(
       "soundsUnavailablePermanent",
       "Speaker not found",
-      "Reboot your EON",
+      "Reboot your Device",
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW_LOWEST, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
 
   Alert(
       "lowMemoryPermanent",
       "RAM Critically Low",
-      "Reboot your EON",
+      "Reboot your Device",
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW_LOWEST, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
 
