@@ -28,8 +28,8 @@ _YAW_NATURAL_OFFSET = 0.08 # people don't seem to look straight when they drive 
 _DISTRACTED_FILTER_TS = 0.25  # 0.6Hz
 
 _POSE_CALIB_MIN_SPEED = 13 # 30 mph
-_POSE_OFFSET_MIN_COUNT = 60 # valid data counts before calibration completes, 1 seg is 600 counts
-_POSE_OFFSET_MAX_COUNT = 360 # stop deweighting new data after 6 min, aka "short term memory"
+_POSE_OFFSET_MIN_COUNT = 600 # valid data counts before calibration completes, 1 seg is 600 counts
+_POSE_OFFSET_MAX_COUNT = 3600 # stop deweighting new data after 6 min, aka "short term memory"
 
 _RECOVERY_FACTOR_MAX = 5. # relative to minus step change
 _RECOVERY_FACTOR_MIN = 1.25 # relative to minus step change
@@ -46,7 +46,7 @@ class DistractedType():
   BAD_POSE = 1
   BAD_BLINK = 2
 
-def face_orientation_from_net(angles_desc, pos_desc, rpy_calib):
+def face_orientation_from_net(angles_desc, pos_desc, rpy_calib, is_rhd):
   # the output of these angles are in device frame
   # so from driver's perspective, pitch is up and yaw is right
 
@@ -64,7 +64,7 @@ def face_orientation_from_net(angles_desc, pos_desc, rpy_calib):
 
   # no calib for roll
   pitch -= rpy_calib[1]
-  yaw -= rpy_calib[2]
+  yaw -= rpy_calib[2] * (1 - 2 * int(is_rhd)) # lhd -> -=, rhd -> +=
   return roll, pitch, yaw
 
 class DriverPose():
