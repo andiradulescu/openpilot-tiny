@@ -58,7 +58,7 @@ def run_DState_seq(driver_state_msgs, driver_car_interaction, openpilot_status, 
   events_from_DM = []
   for idx in range(len(driver_state_msgs)):
     e = Events()
-    DS.get_pose(driver_state_msgs[idx], [0,0,0], 0, openpilot_status[idx])
+    DS.get_pose(driver_state_msgs[idx], [0, 0, 0], 0, openpilot_status[idx])
     # cal_rpy and car_speed don't matter here
 
     # evaluate events at 10Hz for tests
@@ -132,7 +132,7 @@ class TestMonitoring(unittest.TestCase):
   # 5. op engaged, invisible driver, down to orange, driver touches wheel; then down to orange again, driver appears
   #  - both actions should clear the alert, but momentary appearence should not
   def test_sometimes_transparent_commuter(self):
-      _visible_time = np.random.choice([1,10]) # seconds
+      _visible_time = np.random.choice([1, 10]) # seconds
       # print _visible_time
       ds_vector = always_no_face[:]*2
       interaction_vector = always_false[:]*2
