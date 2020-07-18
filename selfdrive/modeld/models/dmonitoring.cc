@@ -5,9 +5,9 @@
 
 #include <libyuv.h>
 
-#define MODEL_WIDTH 320
-#define MODEL_HEIGHT 640
-#define FULL_W 852
+#define MODEL_WIDTH 160
+#define MODEL_HEIGHT 320
+#define FULL_W 426
 
 #if defined(QCOM) || defined(QCOM2)
 #define input_lambda(x) (x - 128.f) * 0.0078125f
@@ -155,7 +155,6 @@ void dmonitoring_publish(PubMaster &pm, uint32_t frame_id, const DMonitoringResu
   framed.setRightEyeProb(res.right_eye_prob);
   framed.setLeftBlinkProb(res.left_blink_prob);
   framed.setRightBlinkProb(res.right_blink_prob);
-  framed.setSgProb(res.sg_prob);
 
   pm.send("driverState", msg);
 }
