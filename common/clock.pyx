@@ -1,3 +1,4 @@
+# cython: language_level = 3
 from posix.time cimport clock_gettime, timespec, CLOCK_MONOTONIC_RAW, clockid_t
 
 cdef double readclock(int clock_id):
