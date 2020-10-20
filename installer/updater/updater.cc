@@ -233,6 +233,8 @@ struct Updater {
                           &display, &surface, &fb_w, &fb_h);
     assert(fb);
 
+    framebuffer_set_power(fb, HWC_POWER_MODE_NORMAL);
+
     vg = nvgCreateGLES3(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
     assert(vg);
 
