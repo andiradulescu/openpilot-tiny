@@ -157,11 +157,12 @@ DMonitoringResult dmonitoring_eval_frame(DMonitoringModelState* s, void* stream_
   return ret;
 }
 
-void dmonitoring_publish(PubMaster &pm, uint32_t frame_id, const DMonitoringResult &res){
+void dmonitoring_publish(PubMaster &pm, uint32_t frame_id, const DMonitoringResult &res, float execution_time){
   // make msg
   MessageBuilder msg;
   auto framed = msg.initEvent().initDriverState();
   framed.setFrameId(frame_id);
+  framed.setModelExecutionTime(execution_time);
 
   kj::ArrayPtr<const float> face_orientation(&res.face_orientation[0], ARRAYSIZE(res.face_orientation));
   kj::ArrayPtr<const float> face_position(&res.face_position[0], ARRAYSIZE(res.face_position));
