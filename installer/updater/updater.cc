@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iostream>
 #include <mutex>
+#include <memory>
 #include <thread>
 
 #include <curl/curl.h>
@@ -185,7 +186,7 @@ struct Updater {
   EGLDisplay display;
   EGLSurface surface;
 
-  FramebufferState *fb = NULL;
+  std::unique_ptr<FrameBuffer> fb;
   NVGcontext *vg = NULL;
   int font_regular;
   int font_semibold;
@@ -233,7 +234,7 @@ struct Updater {
                           &display, &surface, &fb_w, &fb_h);
     assert(fb);
 
-    framebuffer_set_power(fb, HWC_POWER_MODE_NORMAL);
+    fb->set_power(HWC_POWER_MODE_NORMAL);
 
     vg = nvgCreateGLES3(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
     assert(vg);
