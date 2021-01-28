@@ -21,8 +21,9 @@ _DISTRACTED_TIME = 11.
 _DISTRACTED_PRE_TIME_TILL_TERMINAL = 8.
 _DISTRACTED_PROMPT_TIME_TILL_TERMINAL = 6.
 
-_FACE_THRESHOLD = 0.6
-_EYE_THRESHOLD = 0.6
+_FACE_THRESHOLD = 0.5
+_PARTIAL_FACE_THRESHOLD = 0.5
+_EYE_THRESHOLD = 0.5
 _SG_THRESHOLD = 0.5
 _BLINK_THRESHOLD = 0.5
 _BLINK_THRESHOLD_SLACK = 0.65
@@ -102,6 +103,7 @@ class DriverStatus():
     self.driver_distracted = False
     self.driver_distraction_filter = FirstOrderFilter(0., _DISTRACTED_FILTER_TS, DT_DMON)
     self.face_detected = False
+    self.face_partial = False
     self.terminal_alert_cnt = 0
     self.terminal_time = 0
     self.step_change = 0.
