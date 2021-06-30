@@ -176,8 +176,6 @@ void dmonitoring_publish(PubMaster &pm, uint32_t frame_id, const DMonitoringResu
   framed.setPartialFace(res.partial_face);
   framed.setDistractedPose(res.distracted_pose);
   framed.setDistractedEyes(res.distracted_eyes);
-  framed.setEyesOnRoad(res.eyes_on_road);
-  framed.setPhoneUse(res.phone_use);
   if (send_raw_pred) {
     framed.setRawPredictions(raw_pred.asBytes());
   }
