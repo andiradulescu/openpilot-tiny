@@ -215,16 +215,18 @@ class DriverStatus():
       if self.awareness > self.threshold_prompt:
         return
 
-    # should always be counting if distracted unless at standstill and reaching orange
-    if (not (self.face_detected and self.hi_stds * DT_DMON <= _HI_STD_FALLBACK_TIME) or (self.driver_distraction_filter.x > 0.63 and self.driver_distracted and self.face_detected)) and \
-       not (standstill and self.awareness - self.step_change <= self.threshold_prompt):
-      self.awareness = max(self.awareness - self.step_change, -0.1)
+    standstill_exemption = standstill and self.awareness - self.step_change <= self.threshold_prompt
+    certainly_distracted = self.driver_distraction_filter.x > 0.63 and self.driver_distracted and self.face_detected
+    maybe_distracted = self.hi_stds * DT_DMON > _HI_STD_FALLBACK_TIME or not self.face_detected
+    if certainly_distracted or maybe_distracted:
+      # should always be counting if distracted unless at standstill and reaching orange
+      if not standstill_exemption:
+        self.awareness = max(self.awareness - self.step_change, -0.1)
 
     alert = None
     if self.awareness <= 0.:
       # terminal red alert: disengagement required
       alert = EventName.driverDistracted if self.active_monitoring_mode else EventName.driverUnresponsive
-      self.hi_std_alert_enabled = True
       self.terminal_time += 1
       if awareness_prev > 0.:
         self.terminal_alert_cnt += 1

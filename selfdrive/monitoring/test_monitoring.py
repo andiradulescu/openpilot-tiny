@@ -30,6 +30,7 @@ class fake_DM_msg():
     self.rightBlinkProb = 1. * is_distracted
 
 
+
 # driver state from neural net, 10Hz
 msg_NO_FACE_DETECTED = fake_DM_msg(is_face_detected=False)
 msg_ATTENTIVE = fake_DM_msg(is_face_detected=True)
