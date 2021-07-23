@@ -3,6 +3,7 @@ from math import atan2, sqrt
 from cereal import car
 from common.numpy_fast import interp
 from common.realtime import DT_DMON
+from selfdrive.hardware import TICI
 from common.filter_simple import FirstOrderFilter
 from common.stat_live import RunningStatFilter
 
@@ -22,7 +23,7 @@ _DISTRACTED_PRE_TIME_TILL_TERMINAL = 8.
 _DISTRACTED_PROMPT_TIME_TILL_TERMINAL = 6.
 
 _FACE_THRESHOLD = 0.5
-_PARTIAL_FACE_THRESHOLD = 0.5
+_PARTIAL_FACE_THRESHOLD = 0.75 if TICI else 0.5
 _EYE_THRESHOLD = 0.5
 _SG_THRESHOLD = 0.5
 _BLINK_THRESHOLD = 0.5
