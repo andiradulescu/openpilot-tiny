@@ -158,30 +158,38 @@ class DriverStatus():
       pitch_error = pose.pitch - self.settings._PITCH_NATURAL_OFFSET
       yaw_error = pose.yaw - self.settings._YAW_NATURAL_OFFSET
     else:
-      pitch_error = pose.pitch - self.pose.pitch_offseter.filtered_stat.mean()
-      yaw_error = pose.yaw - self.pose.yaw_offseter.filtered_stat.mean()
+      pitch_error = pose.pitch - min(max(self.pose.pitch_offseter.filtered_stat.mean(),
+                                                       self.settings._PITCH_MIN_OFFSET), self.settings._PITCH_MAX_OFFSET)
+      yaw_error = pose.yaw - min(max(self.pose.yaw_offseter.filtered_stat.mean(),
+                                                    self.settings._YAW_MIN_OFFSET), self.settings._YAW_MAX_OFFSET)
 
     pitch_error = 0 if pitch_error > 0 else abs(pitch_error) # no positive pitch limit
     yaw_error = abs(yaw_error)
 
-    if pitch_error*self.settings._PITCH_WEIGHT > self.settings._METRIC_THRESHOLD*pose.cfactor or \
-       yaw_error > self.settings._METRIC_THRESHOLD*pose.cfactor:
+    if pitch_error > self.settings._POSE_PITCH_THRESHOLD*pose.cfactor_pitch or \
+       yaw_error > self.settings._POSE_YAW_THRESHOLD*pose.cfactor_yaw:
       return DistractedType.BAD_POSE
     elif (blink.left_blink + blink.right_blink)*0.5 > self.settings._BLINK_THRESHOLD*blink.cfactor:
       return DistractedType.BAD_BLINK
     else:
       return DistractedType.NOT_DISTRACTED
 
-  def set_policy(self, model_data):
-    ep = min(model_data.meta.engagedProb, 0.8) / 0.8
-    self.pose.cfactor = interp(ep, [0, 0.5, 1],
-                                           [self.settings._METRIC_THRESHOLD_STRICT,
-                                            self.settings. _METRIC_THRESHOLD,
-                                            self.settings._METRIC_THRESHOLD_SLACK]) / self.settings._METRIC_THRESHOLD
+  def set_policy(self, model_data, car_speed):
+    ep = min(model_data.meta.engagedProb, 0.8) / 0.8 # engaged prob
+    bp = model_data.meta.disengagePredictions.brakeDisengageProbs[0] # brake disengage prob in next 2s
+    # TODO: retune adaptive blink
     self.blink.cfactor = interp(ep, [0, 0.5, 1],
                                            [self.settings._BLINK_THRESHOLD_STRICT,
                                             self.settings._BLINK_THRESHOLD,
                                             self.settings._BLINK_THRESHOLD_SLACK]) / self.settings._BLINK_THRESHOLD
+    k1 = max(-0.00156*((car_speed-16)**2)+0.6, 0.2)
+    bp_normal = max(min(bp / k1, 0.5),0)
+    self.pose.cfactor_pitch = interp(bp_normal, [0, 0.5],
+                                           [self.settings._POSE_PITCH_THRESHOLD_SLACK,
+                                            self.settings._POSE_PITCH_THRESHOLD_STRICT]) / self.settings._POSE_PITCH_THRESHOLD
+    self.pose.cfactor_yaw = interp(bp_normal, [0, 0.5],
+                                           [self.settings._POSE_YAW_THRESHOLD_SLACK,
+                                            self.settings._POSE_YAW_THRESHOLD_STRICT]) / self.settings._POSE_YAW_THRESHOLD
 
   def get_pose(self, driver_state, cal_rpy, car_speed, op_engaged):
     # 10 Hz
