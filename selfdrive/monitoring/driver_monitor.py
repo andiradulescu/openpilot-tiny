@@ -5,7 +5,6 @@ from common.numpy_fast import interp
 from common.realtime import DT_DMON
 from common.filter_simple import FirstOrderFilter
 from common.stat_live import RunningStatFilter
-from common.transformations.camera import tici_d_frame_size
 
 EventName = car.CarEvent.EventName
 
@@ -50,9 +49,6 @@ _DISTRACTED_FILTER_TS = 0.25  # 0.6Hz
     self._POSE_OFFSET_MIN_COUNT = int(60 / self._DT_DMON)  # valid data counts before calibration completes, 1min cumulative
     self._POSE_OFFSET_MAX_COUNT = int(360 / self._DT_DMON)  # stop deweighting new data after 6 min, aka "short term memory"
 
-    self._WHEELPOS_THRESHOLD = 0.5
-    self._WHEELPOS_FILTER_MIN_COUNT = int(5 / self._DT_DMON)
-
     self._RECOVERY_FACTOR_MAX = 5.  # relative to minus step change
     self._RECOVERY_FACTOR_MIN = 1.25  # relative to minus step change
 
@@ -60,9 +56,9 @@ _DISTRACTED_FILTER_TS = 0.25  # 0.6Hz
     self._MAX_TERMINAL_DURATION = int(30 / self._DT_DMON)  # not allowed to engage after 30s of terminal alerts
 
 
-# model output refers to center of undistorted+leveled image
-EFL = 598.0 # focal length in K
-W, H = tici_d_frame_size # corrected image has same size as raw
+# model output refers to center of cropped image, so need to apply the x displacement offset
+RESIZED_FOCAL = 320.0
+H, W, FULL_W = 320, 160, 426
 
 class DistractedType:
   NOT_DISTRACTED = 0
@@ -70,22 +66,22 @@ class DistractedType:
   DISTRACTED_BLINK = 2
   DISTRACTED_E2E = 4
 
-def face_orientation_from_net(angles_desc, pos_desc, rpy_calib):
+def face_orientation_from_net(angles_desc, pos_desc, rpy_calib, is_rhd):
   # the output of these angles are in device frame
   # so from driver's perspective, pitch is up and yaw is right
 
   pitch_net, yaw_net, roll_net = angles_desc
 
-  face_pixel_position = ((pos_desc[0]+0.5)*W, (pos_desc[1]+0.5)*H)
-  yaw_focal_angle = atan2(face_pixel_position[0] - W//2, EFL)
-  pitch_focal_angle = atan2(face_pixel_position[1] - H//2, EFL)
+  face_pixel_position = ((pos_desc[0] + .5)*W - W + FULL_W, (pos_desc[1]+.5)*H)
+  yaw_focal_angle = atan2(face_pixel_position[0] - FULL_W//2, RESIZED_FOCAL)
+  pitch_focal_angle = atan2(face_pixel_position[1] - H//2, RESIZED_FOCAL)
 
   pitch = pitch_net + pitch_focal_angle
   yaw = -yaw_net + yaw_focal_angle
 
   # no calib for roll
   pitch -= rpy_calib[1]
-  yaw -= rpy_calib[2]
+  yaw -= rpy_calib[2] * (1 - 2 * int(is_rhd))  # lhd -> -=, rhd -> +=
   return roll_net, pitch, yaw
 
 class DriverPose():
@@ -101,6 +97,7 @@ class DriverBlink():
   def __init__(self):
     self.left_blink = 0.
     self.right_blink = 0.
+    self.cfactor = 1.
 
 class DriverStatus():
   def __init__(self, rhd=False, settings=DRIVER_MONITOR_SETTINGS()):
@@ -108,7 +105,7 @@ class DriverStatus():
     self.settings = settings
 
     # init driver status
-    # self.wheelpos_learner = RunningStatFilter()
+    self.is_rhd_region = rhd
     self.pose = DriverPose(self.settings._POSE_OFFSET_MAX_COUNT)
     self.pose_calibrated = False
     self.blink = DriverBlink()
@@ -125,8 +122,8 @@ class DriverStatus():
     self.distracted_types = []
     self.driver_distracted = False
     self.driver_distraction_filter = FirstOrderFilter(0., self.settings._DISTRACTED_FILTER_TS, self.settings._DT_DMON)
-    self.wheel_on_right = rhd
     self.face_detected = False
+    self.face_partial = False
     self.terminal_alert_cnt = 0
     self.terminal_time = 0
     self.step_change = 0.
@@ -182,7 +179,7 @@ class DriverStatus():
        yaw_error > self.settings._POSE_YAW_THRESHOLD*self.pose.cfactor_yaw:
       distracted_types.append(DistractedType.DISTRACTED_POSE)
 
-    if (self.blink.left_blink + self.blink.right_blink)*0.5 > self.settings._BLINK_THRESHOLD:
+    if (self.blink.left_blink + self.blink.right_blink)*0.5 > self.settings._BLINK_THRESHOLD*self.blink.cfactor:
       distracted_types.append(DistractedType.DISTRACTED_BLINK)
 
     if self.ee1_calibrated:
@@ -199,7 +196,13 @@ class DriverStatus():
     return distracted_types
 
   def set_policy(self, model_data, car_speed):
+    ep = min(model_data.meta.engagedProb, 0.8) / 0.8 # engaged prob
     bp = model_data.meta.disengagePredictions.brakeDisengageProbs[0] # brake disengage prob in next 2s
+    # TODO: retune adaptive blink
+    self.blink.cfactor = interp(ep, [0, 0.5, 1],
+                                           [self.settings._BLINK_THRESHOLD_STRICT,
+                                            self.settings._BLINK_THRESHOLD,
+                                            self.settings._BLINK_THRESHOLD_SLACK]) / self.settings._BLINK_THRESHOLD
     k1 = max(-0.00156*((car_speed-16)**2)+0.6, 0.2)
     bp_normal = max(min(bp / k1, 0.5),0)
     self.pose.cfactor_pitch = interp(bp_normal, [0, 0.5],
