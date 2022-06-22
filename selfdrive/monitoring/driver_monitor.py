@@ -108,7 +108,7 @@ class DriverStatus():
     self.settings = settings
 
     # init driver status
-    # self.wheelpos_learner = RunningStatFilter()
+    self.wheelpos_learner = RunningStatFilter()
     self.pose = DriverPose(self.settings._POSE_OFFSET_MAX_COUNT)
     self.pose_calibrated = False
     self.blink = DriverBlink()
@@ -125,7 +125,8 @@ class DriverStatus():
     self.distracted_types = []
     self.driver_distracted = False
     self.driver_distraction_filter = FirstOrderFilter(0., self.settings._DISTRACTED_FILTER_TS, self.settings._DT_DMON)
-    self.wheel_on_right = rhd
+    self.wheel_on_right = False
+    self.rhd_toggled = rhd
     self.face_detected = False
     self.terminal_alert_cnt = 0
     self.terminal_time = 0
