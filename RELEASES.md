@@ -18,7 +18,7 @@ Version 0.7 (2019-12-13)
  * Improve GM longitudinal control: proper computations for 15Hz radar
  * Move GM port, Toyota with DSU removed, comma pedal in community features; toggle switch required
  * Remove upload over cellular toggle: only upload qlog and qcamera files if not on wifi
- * Refactor Panda code towards ISO26262 and SIL2 compliancy
+ * Refactor Panda code towards ISO26262 and SIL2 compliance
  * Forward stock FCW for Honda Nidec
  * Volkswagen port now standard: comma Harness intercepts stock camera
 
