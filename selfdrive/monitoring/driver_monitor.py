@@ -192,11 +192,11 @@ class DriverStatus():
       ee1_dist = self.eev1 > self.ee1_offseter.filtered_stat.M * self.settings._EE_THRESH12
     else:
       ee1_dist = self.eev1 > self.settings._EE_THRESH11
-    if self.ee2_calibrated:
-      ee2_dist = self.eev2 < self.ee2_offseter.filtered_stat.M * self.settings._EE_THRESH22
-    else:
-      ee2_dist = self.eev2 < self.settings._EE_THRESH21
-    if ee1_dist or ee2_dist:
+    # if self.ee2_calibrated:
+    #   ee2_dist = self.eev2 < self.ee2_offseter.filtered_stat.M * self.settings._EE_THRESH22
+    # else:
+    #   ee2_dist = self.eev2 < self.settings._EE_THRESH21
+    if ee1_dist:
       distracted_types.append(DistractedType.DISTRACTED_E2E)
 
     return distracted_types
