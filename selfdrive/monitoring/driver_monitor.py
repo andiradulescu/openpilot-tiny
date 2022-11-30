@@ -138,6 +138,11 @@ class DriverStatus():
 
     self._set_timers(active_monitoring=True)
 
+  def _reset_awareness(self):
+    self.awareness = 1.
+    self.awareness_active = 1.
+    self.awareness_passive = 1.
+
   def _set_timers(self, active_monitoring):
     if self.active_monitoring_mode and self.awareness <= self.threshold_prompt:
       if active_monitoring:
@@ -244,11 +249,8 @@ class DriverStatus():
     self._set_timers(self.face_detected)
 
   def update_events(self, events, driver_engaged, ctrl_active, standstill):
-    if (driver_engaged and self.awareness > 0) or not ctrl_active:
-      # reset only when on disengagement if red reached
-      self.awareness = 1.
-      self.awareness_active = 1.
-      self.awareness_passive = 1.
+    if (driver_engaged and self.awareness > 0 and not self.active_monitoring_mode) or not ctrl_active: # reset only when on disengagement if red reached
+      self._reset_awareness()
       return
 
     driver_attentive = self.driver_distraction_filter.x < 0.37
